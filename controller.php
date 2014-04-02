@@ -6,7 +6,7 @@ class D3ClearPageCachePackage extends Package {
 
 	protected $pkgHandle = 'd3_clear_page_cache';
 	protected $appVersionRequired = '5.6.0';
-	protected $pkgVersion = '0.9.2';
+	protected $pkgVersion = '1.0';
 	
 	public function getPackageDescription() {
 		return t("Clears the cache for only a selected group of pages'");
