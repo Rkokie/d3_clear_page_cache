@@ -28,7 +28,6 @@ $(document).ready(function() {
 		$("#ccm-" + searchInstance + "-clear-cache-form").ajaxSubmit(function(resp) {
 			
 			ccm_parseJSON(resp, function() {
-				console.log(resp);
 				resp = jQuery.parseJSON(resp);
 				
 				if (resp.success.length >0) {
