@@ -13,14 +13,39 @@ if ($_POST['task'] == 'clear_cache') {
 	
 	$i=0;
 	if (is_array($_POST['cID'])) {
+		$db = Loader::db();
+		$library = PageCache::getLibrary();
+		
 		foreach($_POST['cID'] as $cID) {
 			$c = Page::getByID($cID);
 			$cp = new Permissions($c);
 			if ($cp->canEditPageSpeedSettings()){
-				$blocks = $c->getBlocks();
-				foreach($blocks as $block) $block->refreshCache();
 				$c->refreshCache();
 				$c->reindex();
+				$blocks = $c->getBlocks();
+				
+				foreach($blocks as $block){
+					$bID = $block->getBlockID();
+					$v = array($c->getCollectionID(), $c->getVersionID(), $block->getAreaHandle(), $bID);
+					$db->Execute('DELETE FROM CollectionVersionBlocksOutputCache WHERE cID = ? and cvID = ? and arHandle = ? and bID = ?', $v);
+				}
+				
+				$key = urlencode(trim($c->getCollectionPath(), '/'));
+				$folder = '';
+				$keyLength = strlen($key);
+				if ($keyLength >= 1) $folder .= $key[0] . '/';
+				if ($keyLength >= 2) $folder .= $key[1] . '/';
+				if ($keyLength >= 3) $folder .= $key[2] . '/';
+				
+				$file = DIR_FILES_PAGE_CACHE . '/' . $folder . $key . '.cache';
+				if (file_exists($file)) {
+					$contents = file_get_contents($file);
+					$record = @unserialize($contents);
+					if ($record instanceof PageCacheRecord) {
+						$library->purgeByRecord($record);
+					}
+				}
+				
 				$i++;
 			} else {
 				$json['error'] = t('Unable to clear the cache');
